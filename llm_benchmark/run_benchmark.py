@@ -81,7 +81,10 @@ def run_benchmark(models_file_path, benchmark_file_path, type, ollamabin: str = 
                                     img_file_path = str(files('llm_benchmark').joinpath(f'data/img/{img}'))
                                     prompt = f"{one_prompt['prompt']} {img_file_path}"
                                     print(f"prompt = {prompt}")
-                                    result = subprocess.run([ollamabin, 'run', model_name, one_prompt['prompt'],'--verbose'], capture_output=True, text=True, check=True, encoding='utf-8')
+                                    result = subprocess.run([ollamabin, 'run', model_name, one_prompt['prompt'],'--verbose'], capture_output=True, text=True, encoding='utf-8')
+                                    if result.returncode != 0 and not result.stderr:
+                                        print(f"  [warning] ollama exited with code {result.returncode}, skipping prompt")
+                                        continue
                                     std_err = result.stderr
                                     #print(result.stderr)
                                     file1.write(std_err)
@@ -95,7 +98,10 @@ def run_benchmark(models_file_path, benchmark_file_path, type, ollamabin: str = 
                         else:
                             for one_prompt in one_model_type['prompts']:
                                 print(f"prompt = {one_prompt['prompt']}")
-                                result = subprocess.run([ollamabin, 'run', model_name, one_prompt['prompt'],'--verbose'], capture_output=True, text=True, check=True, encoding='utf-8')
+                                result = subprocess.run([ollamabin, 'run', model_name, one_prompt['prompt'],'--verbose'], capture_output=True, text=True, encoding='utf-8')
+                                if result.returncode != 0 and not result.stderr:
+                                    print(f"  [warning] ollama exited with code {result.returncode}, skipping prompt")
+                                    continue
                                 std_err = result.stderr
                                 #print(result.stderr)                                   
                                 file1.write(std_err)                                    

@@ -52,6 +52,7 @@ def run(
             models_file_path = str(files('llm_benchmark').joinpath('data/benchmark_models_8gb_ram.yml'))
         elif(ft_mem_size>=15 and ft_mem_size <31):
             models_file_path = str(files('llm_benchmark').joinpath('data/benchmark_models_16gb_ram.yml'))
+        # For systems with >=31GB RAM, the 32gb model file (set as default above) is appropriate
 
     check_models.pull_models(models_file_path)
     print('-'*10)

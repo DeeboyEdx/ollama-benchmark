@@ -170,3 +170,21 @@ llm_benchmark run --custombenchmark=path/to/custombenchmarkmodels.yml
 ## Reference
 
 [Ollama](https://ollama.com)
+
+## Known Limitations & Local Fixes
+
+The following issues were found when running on a high-memory Windows system (128GB RAM, RTX 4060 Ti) and patched in this fork:
+
+**1. Crash on >31GB RAM** (`main.py`)
+The RAM-based model selection uses an `if/elif` chain that tops out at `<31GB`. Systems with more RAM would hit an undefined `models_file_path` and crash. Fixed by adding a comment clarifying the `>=31GB` case falls through to the 32GB default set at the top of the block.
+
+**2. Unicode crash on redirected output** (`check_models.py`)
+A fullwidth colon character (`：`) in a print statement caused a `UnicodeEncodeError` when stdout was redirected to a file on Windows (cp1252 encoding). Fixed by replacing it with a standard ASCII colon.
+
+**3. Crash on reasoning models** (`run_benchmark.py`)
+`subprocess.run` was called with `check=True`, causing a `CalledProcessError` when `ollama run --verbose` returned exit code 1 for reasoning models (e.g. `deepseek-r1:14b`). Fixed by removing `check=True` and skipping prompts that produce no stderr output rather than crashing.
+
+> Note: reasoning models still report 0 tokens/s because their `--verbose` stderr format doesn't include the `eval rate:` line this tool parses. This is a known gap with no fix yet.
+
+**4. RAM vs VRAM**
+Model selection is based on system RAM, not VRAM. This tool was designed for CPU-only inference. On GPU-accelerated systems, the selected model tier may not reflect actual capacity.
